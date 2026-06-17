@@ -1,170 +1,98 @@
-# 💰 Cloud Cost Intelligence Platform
+# Cloud Cost Intelligence Platform
 
 ![Cloud](https://img.shields.io/badge/Cloud-GCP%20%7C%20AWS-orange)
 ![FinOps](https://img.shields.io/badge/FinOps-Cost%20Optimization-blue)
 ![Savings](https://img.shields.io/badge/Savings-%242.3M%20Annual-success)
-![Teams](https://img.shields.io/badge/Teams-8%2B%20Engineering%20Teams-informational)
+![Teams](https://img.shields.io/badge/Teams-8%2B%20Engineering-informational)
 ![Reduction](https://img.shields.io/badge/BigQuery-~30--35%25%20Cost%20Reduction-green)
 
-> **Delivered ~$2.3M in annual cloud savings across 8+ engineering teams** by building a real-time cost attribution and optimization governance platform — shifting the organization from reactive cost discovery to proactive spend management.
+> **Delivered ~$2.3M in annual cloud savings across 8+ engineering teams** by building a real-time cost attribution and FinOps governance platform, shifting the org from reactive cost discovery to proactive spend management.
+
+> Program case study based on a production platform. The metrics below are from that program. This repo documents the design and operating model; it is not a runnable distribution.
 
 ---
 
-## 🧩 The Problem
+## The problem
 
-Cloud costs grow rapidly in large organizations without clear attribution to teams, services, or workloads.
+Cloud costs grow fast in large orgs without clear attribution to teams, services, or workloads. Engineering teams could not see which queries, dashboards, or services drove spend, so cost spikes were found after the fact, when correction is expensive and slow. The core challenge was behavioral, not technical: teams cannot optimize what they cannot see.
 
-Engineering teams lacked visibility into which queries, dashboards, or services were driving spend — leading to inefficiencies and budget overruns. Without real-time insights, cost spikes were discovered after the fact, making corrective action expensive and slow.
+## The solution
 
-The core challenge wasn't technical — it was behavioral: teams couldn't optimize what they couldn't see.
+A centralized platform that gives real-time visibility into cloud spend across services, teams, and workloads. It attributes costs to individual teams, surfaces high-cost queries and workloads, and enforces governance through dashboards and optimization workflows, enabling proactive spend management at scale.
 
----
-
-## 💡 The Solution
-
-Built a centralized **Cloud Cost Intelligence Platform** that provides real-time visibility into cloud spend and usage across services, teams, and workloads.
-
-The platform attributes costs to individual teams, surfaces high-cost queries and workloads, and enforces governance through dashboards and optimization workflows — enabling proactive spend management at scale.
-
----
-
-## 📊 Program Impact
+## Program impact
 
 | Metric | Result |
 |---|---|
-| Annual Cloud Savings | ~$2.3M |
-| BigQuery Cost Reduction | ~30–35% |
-| Engineering Teams Onboarded | 8+ |
-| Cost Attribution Coverage | End-to-end (user → service → dashboard) |
-| Insight Mode | Real-time |
+| Annual cloud savings | ~$2.3M |
+| BigQuery cost reduction | ~30 to 35% |
+| Engineering teams onboarded | 8+ |
+| Cost attribution coverage | End-to-end (user to service to dashboard) |
+| Insight mode | Real-time |
 
----
+## Architecture
 
-## 🏗️ Architecture
-
-```
-            ┌────────────────────────────┐
-            │   Cloud Billing + Logs     │
-            │  (GCP Billing API / AWS)   │
-            └────────────┬───────────────┘
-                         │
-            ┌────────────▼────────────┐
-            │   Data Ingestion Layer  │
-            │ (Audit Logs / Metrics)  │
-            └────────────┬────────────┘
-                         │
-            ┌────────────▼────────────┐
-            │   Processing Layer      │
-            │ (Aggregation / Mapping) │
-            └────────────┬────────────┘
-                         │
-    ┌────────────────────▼────────────────────┐
-    │      Cost Attribution Engine            │
-    │ (User • Service • Dashboard Mapping)    │
-    └────────────┬───────────────┬────────────┘
-                 │               │
-    ┌────────────▼──────┐ ┌──────▼────────────┐
-    │ Optimization Rules │ │ Visualization     │
-    │ (Scheduling, Tuning│ │ (Grafana Dashboards│
-    │  Partitioning)     │ │  + Alerting)      │
-    └───────────────────┘ └───────────────────┘
+```mermaid
+flowchart TD
+    SRC[Cloud billing + logs<br/>GCP Billing API / AWS] --> ING[Ingestion layer<br/>audit logs - metrics]
+    ING --> PROC[Processing layer<br/>aggregation - mapping]
+    PROC --> ATTR[Cost attribution engine<br/>user - service - dashboard]
+    ATTR --> OPT[Optimization rules<br/>scheduling - partitioning - idle cleanup]
+    ATTR --> VIZ[Visualization<br/>Grafana dashboards + alerting]
+    OPT --> GOV[Weekly cost governance review]
+    VIZ --> GOV
 ```
 
-**Key components:**
-- **Ingestion Layer** — Pulls billing and audit log data from GCP Billing API and Cloud Monitoring
-- **Attribution Engine** — Maps cost to teams, users, dashboards, and individual services
-- **Optimization Rules** — Identifies inefficiencies (unpartitioned tables, high-frequency queries, idle resources)
-- **Visualization** — Grafana dashboards surfacing actionable cost breakdowns in real time
+**Key components**
+- **Ingestion** pulls billing and audit-log data from GCP Billing API and Cloud Monitoring
+- **Attribution engine** maps cost to teams, users, dashboards, and services
+- **Optimization rules** flag inefficiencies: unpartitioned tables, high-frequency queries, idle resources
+- **Visualization** surfaces actionable cost breakdowns in real time via Grafana
 
----
+## How it works
 
-## 🎬 Platform Outputs
+1. **Ingest** billing logs and usage metrics into a centralized pipeline
+2. **Attribute** costs to users, dashboards, and services via the attribution engine
+3. **Analyze** to identify inefficiencies and savings opportunities
+4. **Surface** insights to Grafana so teams can act
+5. **Govern** spend in a weekly review; recommendations tracked to closure
 
-The platform delivers:
-- Real-time cost dashboards broken down by team, service, and workload
-- High-cost query identification with optimization recommendations
-- Scheduling and partitioning recommendations for BigQuery
-- Cost trend analysis and anomaly detection
-- Attribution reports for engineering leads and finance stakeholders
+## Reference implementation (illustrative)
 
----
+This repo describes the platform; it does not ship a runnable package. A faithful implementation would include:
 
-## ⚙️ How It Works
+- A Python ingestion job reading the GCP Billing BigQuery export and Cloud Monitoring metrics
+- An attribution module mapping labels and audit logs to owners
+- A rules module flagging unpartitioned tables, idle resources, and high-cost queries
+- Grafana dashboard definitions for per-team and per-service breakdowns
 
-1. **Ingest** — Billing logs and usage metrics are pulled from GCP Billing API and Cloud Monitoring into a centralized pipeline
-2. **Attribute** — Costs are mapped to users, dashboards, and services via the Attribution Engine
-3. **Analyze** — The optimization engine identifies inefficiencies: high-frequency queries, unpartitioned tables, idle resources
-4. **Surface** — Insights are pushed to Grafana dashboards, enabling teams to take targeted action
-5. **Govern** — Teams review spend weekly; optimization recommendations are tracked to closure
+For a runnable, CI-tested example of an ML/LLM evaluation and release pipeline in this portfolio, see [Model-Eval-and-Release-Pipeline](https://github.com/gkcloudai/Model-Eval-and-Release-Pipeline).
 
----
+## Tradeoffs and design decisions
 
-## ⚙️ Setup
+**Visibility-first over automated enforcement:** shipping dashboards before enforcement drove faster adoption. Teams optimized voluntarily once they could see their own spend. Enforcement without visibility creates friction.
 
-### Prerequisites
-- Python 3.9+
-- GCP service account with Billing and BigQuery permissions (or equivalent AWS IAM role)
-- Access to Cloud Billing export (BigQuery sink)
+**Grafana over a custom UI:** existing familiarity shortened time-to-adoption. A custom UI would have added 6 to 8 weeks of delivery risk for marginal benefit.
 
-### Install
-```bash
-git clone https://github.com/yourusername/cloud-cost-intelligence-platform.git
-cd cloud-cost-intelligence-platform
-pip install -r requirements.txt
-```
+**What I would do differently:** introduce automated guardrails and budget alerts earlier. Reactive optimization has diminishing returns; proactive thresholds compound savings faster.
 
-### Run
-```bash
-python main.py
-```
+## What I learned
 
----
+- Visibility changes behavior more effectively than policy enforcement.
+- Cost optimization is as much a cultural problem as a technical one.
+- Attribution granularity, mapping cost to the right owner at the right level, is the hard problem and needs upfront data modeling.
 
-## 🧪 Example
+## Next steps
 
-**Input:** GCP Cloud Billing export + BigQuery audit logs + Cloud Monitoring metrics
+- [ ] Automated cost alerts via Slack and email
+- [ ] Budget enforcement with soft and hard caps
+- [ ] Predictive cost modeling from historical trends
+- [ ] Self-serve optimization recommendations in an internal developer portal
 
-**Output:**
-- Cost attribution dashboard by team and service
-- High-cost query list with optimization recommendations
-- Weekly savings opportunity report with projected impact
+## Built with
 
----
+BigQuery | GCP Billing API | Cloud Monitoring | Grafana | Python
 
-## ⚖️ Tradeoffs & Design Decisions
+## Author
 
-**Why visibility-first over automated enforcement:**
-Shipping dashboards before enforcement rules drove faster adoption — teams voluntarily optimized once they could see their own spend. Enforcement without visibility creates friction and resistance.
-
-**Why Grafana over a custom UI:**
-Grafana's existing familiarity across engineering teams shortened time-to-adoption. Building a custom UI would have added 6–8 weeks of delivery risk with marginal benefit at this stage.
-
-**What I'd do differently:**
-Introduce automated cost guardrails and budget alerts earlier in the rollout. Reactive optimization has diminishing returns — proactive thresholds would have accelerated savings compounding.
-
----
-
-## 🧠 What I Learned
-
-- **Visibility drives behavior change more effectively than policy enforcement** — showing a team their spend profile creates accountability without mandates
-- **Cost optimization is as much a cultural problem as a technical one** — governance frameworks and team rituals matter as much as tooling
-- **Attribution granularity is the hard problem** — mapping cost to the right owner at the right level (user vs. service vs. team) requires significant data modeling investment upfront
-
----
-
-## 🚀 Next Steps
-
-- [ ] Automated cost alerts with Slack/email notifications
-- [ ] Budget enforcement policies with soft and hard caps
-- [ ] Predictive cost modeling using historical trend data
-- [ ] Self-serve optimization recommendations via an internal developer portal
-
----
-
-## 🛠️ Built With
-
-- **BigQuery** — Cost data storage, query analysis, and aggregation
-- **GCP Billing API** — Real-time billing data ingestion
-- **Cloud Monitoring** — Usage metrics and audit log collection
-- **Grafana** — Dashboard visualization and alerting
-- **Python** — Data pipeline, attribution engine, optimization rules
+**Gaurav Kumar** | [LinkedIn](https://www.linkedin.com/in/gauravkumar2)
